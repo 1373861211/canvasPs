@@ -62,11 +62,6 @@ let scaleOrigin = {
 let translateX = 0;
 let translateY = 0;
 const touchmove = (e: TouchEvent) => {
-    let touch = e.touches[0];
-    let translated = getTranslate(touch.target);
-    // 移动后的位置 = 当前位置 + （此刻触摸点位置 - 上一次触摸点位置）
-    translateX = translated.left + (touch.clientX - preTouchPosition.x);
-    translateY = translated.top + (touch.clientY - preTouchPosition.y);
     let touches = e.touches;
     if (touches.length === 1) {
         let oneTouch = touches['0'];
@@ -77,34 +72,24 @@ const touchmove = (e: TouchEvent) => {
         setStyle('transform', matrix);
         recordPreTouchPosition(oneTouch);
     } else {
-        // 即便同时落下 10 个手指，我们只取前 2 个就好
         let one = touches['0'];
         let two = touches['1'];
-        // 新的缩放倍率 = （当前指间距离 ÷ 之前指间距离）× 之前缩放倍率
-        // 没有在 touchstart 中记录最初的双指位置，计算会得到 NaN，对结果直接取 1
-        // 移动基点
-        // let origin = relativeCoordinate((one.clientX + two.clientX) / 2, (one.clientY + two.clientY) / 2, img.getBoundingClientRect());
-        // scaleOrigin = origin;
-        // setStyle('transform-origin', `${origin.x}px ${origin.y}px`);
         scaleRatio = distance(one.clientX, one.clientY, two.clientX, two.clientY) / distance(...preTouchesClientx1y1x2y2) * scaleRatio || 1;
         if (!originHaveSet) {
             originHaveSet = true;
             // 移动视线中心
             let origin = relativeCoordinate((one.clientX + two.clientX) / 2, (one.clientY + two.clientY) / 2, img.getBoundingClientRect());
-            // 修正视野变化带来的平移量，别忘了加上之前已有的位移值啊！
+            // 修正视野变化带来的平移量
             translateX = (scaleRatio - 1) * (origin.x - scaleOrigin.x) + translateX;
             translateY = (scaleRatio - 1) * (origin.y - scaleOrigin.y) + translateY;
             setStyle('transform-origin', `${origin.x}px ${origin.y}px`);
             scaleOrigin = origin;
-            console.log(matrix, 'matrix')
-            // originHaveSet = false;
         }
         let matrix = `matrix(${scaleRatio}, 0, 0, ${scaleRatio}, ${translateX}, ${translateY})`;
         setStyle('transform', matrix);
         preTouchesClientx1y1x2y2 = [one.clientX, one.clientY, two.clientX, two.clientY];
-        e.preventDefault();
-        // 及时更新双指位置信息
     }
+    e.preventDefault();
 }
 const touchstart = (e: TouchEvent) => {
     let touches = e.touches;
