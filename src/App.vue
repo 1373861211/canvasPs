@@ -1,29 +1,31 @@
 <script setup lang="ts">
-import pstitle from './components/title.vue'
+import psTitle from './components/title.vue'
 import psBody from './components/ps-body.vue'
 import toolbar from './components/toolbar.vue'
-import opertate from './components/opertate.vue'
+import operate from './components/operate.vue'
+
+import { ref } from "vue";
+const activeIndex = ref(-1)
 </script>
 
 <template>
-  <div class="contanier">
-    <pstitle />
+  <div class="container">
     <div class="body">
-      <ps-body />
+      <ps-body :activeIndex="activeIndex"/>
     </div>
-    <toolbar />
-    <opertate />
+    <toolbar v-model:activeIndex="activeIndex" />
+    <operate />
   </div>
 </template>
 
 <style scoped>
-.contanier {
+.container {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 .body {
-  height: calc(100% - 149px);
+  flex: 1;
   overflow: hidden;
 }
 </style>

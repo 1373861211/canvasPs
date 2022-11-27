@@ -1,5 +1,5 @@
 <template>
-    <div class="operate-contanier">
+    <div class="operate-container">
         <div class="operate-box" v-for="(item, i) in OPERATES" :key="i">
             {{item.text}}
         </div>
@@ -11,7 +11,7 @@ import {OPERATES} from '../dict.js'
 </script>
 
 <style lang="less" scoped>
-.operate-contanier {
+.operate-container {
     display: flex;
     padding: 10px 0;
     height: 24px

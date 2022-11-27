@@ -10,9 +10,14 @@ export const TOOLS: tool[] = [
         value: 'undo'
     },
     {
-        icon: 'arrow-go-forward-line',
-        text: '恢复',
-        value: 'recover'
+        icon: 'eraser-line',
+        text: '橡皮檫',
+        value: 'eraser'
+    },
+    {
+        icon: 'color-getter-line',
+        text: '吸色',
+        value: 'getColor'
     },
     {
         icon: 'markup-line',
@@ -30,17 +35,12 @@ export const TOOLS: tool[] = [
         value: 'tick'
     },
     {
-        icon: 'no-line',
-        text: '打叉',
-        value: 'cross'
-    },
-    {
         icon: 'clockwise-line',
         text: '旋转',
         value: 'rotate'
     },
     {
-        icon: 'artboard-line',
+        icon: 'clip-line',
         text: '裁剪',
         value: 'clip'
     }
