@@ -158,3 +158,33 @@ export const paintStart = (e:TouchEvent, canvas: HTMLCanvasElement) => {
     beginY = e.touches[0].pageY - canvas.offsetTop - top;
 
 }
+
+// 获取本地上传图片
+export const getFileUrl = (e: InputEvent)=> {
+    let files = e.target?.files, file;
+    if (files && files.length > 0) {
+        // 获取目前上传的文件
+        file = files[0];
+        // 来在控制台看看到底这个对象是什么
+        console.log(file);
+        // 那么我们可以做一下诸如文件大小校验的动作
+        if (file.size > 1024 * 1024 * 5) {
+            alert('图片大小不能超过 5MB!');
+            return false;
+        }
+        // 下面是关键的关键，通过这个 file 对象生成一个可用的图像 URL
+        // 获取 window 的 URL 工具
+        let URL = window.URL || window.webkitURL;
+        // 通过 file 生成目标 url
+        return URL.createObjectURL(file);
+    }
+    return ''
+}
+
+export const downloadImg = (dataUrl: string) =>{
+	let aLink = document.createElement('a')
+	aLink.download = 'sds.jpg' // 文件名后缀需要和dataurl表示的相同，否则可能乱码
+	aLink.href = dataUrl
+    console.log(dataUrl,'dataUrl')
+	aLink.click()
+}

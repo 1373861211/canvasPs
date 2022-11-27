@@ -51,16 +51,8 @@ interface operate {
 }
 export const OPERATES: operate[] = [
     {
-        text: '如何使用',
-        value: 'help'
-    },
-    {
-        text: '上一张',
-        value: 'prev'
-    },
-    {
-        text: '下一张',
-        value: 'next'
+        text: '上传图片',
+        value: 'upload'
     },
     {
         text: '保存',

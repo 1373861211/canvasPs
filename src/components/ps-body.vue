@@ -1,46 +1,51 @@
 <template>
     <div class="canvas-box">
-        <canvas id="demo"
-            @touchmove="touchmove"
-            @touchstart="touchstart"
-            @touchcancel="touchEvent"
-            @touchend="touchEvent"
-        ></canvas>
+        <canvas id="demo" @touchmove="touchmove" @touchstart="touchstart" @touchcancel="touchEvent"
+            @touchend="touchEvent"></canvas>
         <canvas id="erasure" class="src"></canvas>
         <!-- <img :src="src" class="src"> -->
     </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import src from '@/assets/thin.webp'
-import {zoomIng, zoomStart, zoomEvent, paintIng, paintStart} from '../utils'
+import { zoomIng, zoomStart, zoomEvent, paintIng, paintStart, downloadImg } from '../utils'
 const props = defineProps({
-    activeIndex: Number
+    activeIndex: Number,
+    psUrl: String
 })
+
+const save = (dataUrl: string, name: string, ext: string) => {
+    downloadImg(dataUrl)
+}
+// 暴露方法父组件调用子组件方法或者属性
+defineExpose({
+    save,
+});
 let canvasErasure: HTMLCanvasElement
 let ctxErasure: CanvasRenderingContext2D
 
 let canvas: HTMLCanvasElement
 let ctx: CanvasRenderingContext2D
+
+let canvasBox: HTMLDivElement
+
+let url: string
 onMounted(() => {
-    let canvasBox = document.querySelector('.canvas-box') as HTMLDivElement
+    canvasBox = document.querySelector('.canvas-box') as HTMLDivElement
     canvas = document.getElementById('demo') as HTMLCanvasElement
     ctx = canvas.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D
     canvasErasure = document.getElementById('erasure') as HTMLCanvasElement
-    ctxErasure = canvasErasure.getContext('2d',  { willReadFrequently: true }) as CanvasRenderingContext2D
-    let image = new Image()
-    image.src = src
-    image.onload = function () {
-        canvas.width = image.width * canvasBox.offsetHeight / image.height;
-        canvas.height = canvasBox.offsetHeight;
-        canvasErasure.width = canvas.width;
-        canvasErasure.height = canvas.height;
-        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        ctxErasure.drawImage(image, 0, 0, canvas.width, canvas.height);
-    }
+    ctxErasure = canvasErasure.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D
+    setSrc(src)
 })
-const touchstart = (e: TouchEvent)=> {
+
+watch(() => props.psUrl, (newValue, oldValue) => {
+    console.log("新值是" + newValue, "旧址是" + oldValue);
+    setSrc(newValue as string)
+})
+const touchstart = (e: TouchEvent) => {
     switch (props.activeIndex) {
         case -1:
             // 拖动、缩放
@@ -54,7 +59,7 @@ const touchstart = (e: TouchEvent)=> {
             break;
     }
 }
-const touchmove = (e: TouchEvent)=> {
+const touchmove = (e: TouchEvent) => {
     switch (props.activeIndex) {
         case -1:
             // 拖动、缩放
@@ -72,7 +77,7 @@ const touchmove = (e: TouchEvent)=> {
             break;
     }
 }
-const touchEvent = (e: TouchEvent)=> {
+const touchEvent = (e: TouchEvent) => {
     switch (props.activeIndex) {
         case -1:
             // 拖动、缩放
@@ -86,6 +91,20 @@ const touchEvent = (e: TouchEvent)=> {
             break;
     }
 }
+
+const setSrc = (src: string) => {
+    let image = new Image()
+    image.src = src
+    url = src
+    image.onload = function () {
+        canvas.width = image.width * canvasBox.offsetHeight / image.height;
+        canvas.height = canvasBox.offsetHeight;
+        canvasErasure.width = canvas.width;
+        canvasErasure.height = canvas.height;
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        ctxErasure.drawImage(image, 0, 0, canvas.width, canvas.height);
+    }
+}
 </script>
 
 <style scoped lang="less">
@@ -97,6 +116,7 @@ const touchEvent = (e: TouchEvent)=> {
     height: 100%;
     font-size: 0;
 }
+
 #demo {
     position: absolute;
     top: 0;
@@ -106,6 +126,7 @@ const touchEvent = (e: TouchEvent)=> {
     width: 100%;
     z-index: 5;
 }
+
 .src {
     position: absolute;
     top: 0;
