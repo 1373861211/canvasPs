@@ -33,7 +33,6 @@ body {
     margin: 0;
     display: flex;
     height: 100vh;
-    touch-action: none;
 }
 
 h1 {

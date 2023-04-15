@@ -50,7 +50,7 @@ let scaleOrigin = {
 let translateX = 0;
 let translateY = 0;
 export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure: HTMLCanvasElement) => {
-    let touches = e.touches;
+    let touches = e.changedTouches;
     if (touches.length === 1) {
         let oneTouch = touches['0'];
         let translated = getTranslate(oneTouch.target);
@@ -63,7 +63,7 @@ export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure:
     } else {
         let one = touches['0'];
         let two = touches['1'];
-        scaleRatio = distance(one.clientX, one.clientY, two.clientX, two.clientY) / distance(...preTouchesClientx1y1x2y2 as [number,number,number,number]) * scaleRatio || 1;
+        scaleRatio = distance(one.clientX, one.clientY, two.clientX, two.clientY) / distance(...preTouchesClientx1y1x2y2 as [number, number, number, number]) * scaleRatio || 1;
         if (!originHaveSet) {
             originHaveSet = true;
             // 移动视线中心
@@ -76,7 +76,6 @@ export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure:
             scaleOrigin = origin;
         }
         let matrix = `matrix(${scaleRatio}, 0, 0, ${scaleRatio}, ${translateX}, ${translateY})`;
-        console.log(scaleRatio,'scaleRatio',translateX)
         setStyle('transform', matrix, canvas);
         setStyle('transform', matrix, canvasErasure);
         preTouchesClientx1y1x2y2 = [one.clientX, one.clientY, two.clientX, two.clientY];
@@ -84,7 +83,7 @@ export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure:
     e.preventDefault();
 }
 export const zoomStart = (e: TouchEvent) => {
-    let touches = e.touches;
+    let touches = e.changedTouches;
     // 双指同时落下也是有先后顺序的，当发现多指触摸时进行记录
     if (touches.length > 1) {
         let one = touches['0'];
@@ -97,7 +96,7 @@ export const zoomStart = (e: TouchEvent) => {
     recordPreTouchPosition(touches['0']);
 };
 export const zoomEvent = (e: TouchEvent) => {
-    let touches = e.touches;
+    let touches = e.changedTouches;
     if (touches.length === 1) {
         recordPreTouchPosition(touches['0']);
     }
@@ -111,56 +110,74 @@ const writing = (
     stopY: number,
     ctx: CanvasRenderingContext2D,
 ) => {
-    ctx.beginPath();  // 开启一条新路径
+    ctx.save();
     ctx.globalAlpha = 1;  // 设置图片的透明度
-    ctx.lineWidth = 3;  // 设置线宽
     ctx.strokeStyle = 'red';  // 设置路径颜色
-    ctx.moveTo(beginX, beginY);  // 从(beginX, beginY)这个坐标点开始画图
-    ctx.lineTo(stopX, stopY);  // 定义从(beginX, beginY)到(stopX, stopY)的线条（该方法不会创建线条）
-    ctx.closePath();  // 创建该条路径
-    ctx.stroke();  // 实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    const drawTimes = 16;
+    const baseX = beginX, baseY = beginY, baseW = 8;
+    const xd = (stopX - baseX) / drawTimes;
+    const yd = (stopY - baseY) / drawTimes;
+    for (let i = 0; i < 16; i++) {
+        ctx.beginPath();
+        ctx.lineWidth = baseW
+        ctx.moveTo(beginX, beginY);  // 从(beginX, beginY)这个坐标点开始画图
+        ctx.lineTo(beginX = beginX + xd, beginY = beginY + yd);
+        ctx.stroke();  // 实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+        ctx.closePath();  // 创建该条路径
+    }
+    ctx.restore();
+    // ctx.beginPath();  // 开启一条新路径
+    // ctx.globalAlpha = 1;  // 设置图片的透明度
+    // ctx.lineWidth = 8;  // 设置线宽
+    // ctx.strokeStyle = 'red';  // 设置路径颜色
+    // ctx.moveTo(beginX, beginY);  // 从(beginX, beginY)这个坐标点开始画图
+    // ctx.lineTo(stopX, stopY);  // 定义从(beginX, beginY)到(stopX, stopY)的线条（该方法不会创建线条）
+    // ctx.closePath();  // 创建该条路径
+    // ctx.stroke(); 
 };
 
-const erasure = (
-    beginX: number,
-    beginY: number,
-    stopX: number,
-    stopY: number,
-    ctx: CanvasRenderingContext2D,
-    ctxErasure: CanvasRenderingContext2D
-) =>{
-        const imgData=ctxErasure.getImageData(beginX,beginY,3,3);
-        ctx.putImageData(imgData,stopX,stopY);
-}
 let beginX: number;
 let beginY: number;
 let left: number;
 let top: number;
 let scale: number;
-export const paintIng = (e:TouchEvent, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, ctxErasure?: CanvasRenderingContext2D) => {
-    const touches = e.touches[0];
-    let stopX = touches.pageX - canvas.offsetLeft - left;
-    let stopY = touches.pageY - canvas.offsetTop - top;
-    if(ctxErasure) {
-        ctx.clearRect(stopX , stopY, 30, 30)
+export const paintIng = (e: TouchEvent, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, ctxErasure?: CanvasRenderingContext2D) => {
+    e.preventDefault()
+    const translate = getTranslate(e.changedTouches[0].target)
+    left = translate.left
+    top = translate.top
+    scale = translate.scale
+    console.log(left, 'left', top, 'top', scale)
+    const touches = e.changedTouches[0];
+    console.log(touches.clientX, touches.clientY, 'canvas', canvas.offsetLeft, canvas.offsetTop)
+
+    let stopX = touches.clientX  - translateX;
+    let stopY = touches.clientY - translateY;
+    console.log(beginX, beginY, 'beginY')
+    if (ctxErasure) {
+        ctx.clearRect(stopX, stopY, 30, 30)
     } else {
         writing(beginX, beginY, stopX, stopY, ctx);
     }
     beginX = stopX; // 这一步很关键，需要不断更新起点，否则画出来的是射线簇
     beginY = stopY;
+    // debugger
+    // console.log(getCanvasInverImatrix(canvas))
 };
-export const paintStart = (e:TouchEvent, canvas: HTMLCanvasElement) => {
-    const translate = getTranslate(e.touches[0].target)
+export const paintStart = (e: TouchEvent, canvas: HTMLCanvasElement) => {
+    const translate = getTranslate(e.changedTouches[0].target)
     left = translate.left
     top = translate.top
-    scale = translate.scale
-    beginX = e.touches[0].pageX - canvas.offsetLeft - left;
-    beginY = e.touches[0].pageY - canvas.offsetTop - top;
+    console.log(scaleRatio, 'paint', left)
+    beginX = e.changedTouches[0].clientX  - translateX;
+    beginY = e.changedTouches[0].clientY - translateY;
 
 }
 
 // 获取本地上传图片
-export const getFileUrl = (e: InputEvent)=> {
+export const getFileUrl = (e: InputEvent) => {
     let files = e.target?.files, file;
     if (files && files.length > 0) {
         // 获取目前上传的文件
@@ -181,10 +198,10 @@ export const getFileUrl = (e: InputEvent)=> {
     return ''
 }
 
-export const downloadImg = (dataUrl: string) =>{
-	let aLink = document.createElement('a')
-	aLink.download = 'sds.jpg' // 文件名后缀需要和dataurl表示的相同，否则可能乱码
-	aLink.href = dataUrl
-    console.log(dataUrl,'dataUrl')
-	aLink.click()
+export const downloadImg = (dataUrl: string) => {
+    let aLink = document.createElement('a')
+    aLink.download = 'sds.jpg' // 文件名后缀需要和dataurl表示的相同，否则可能乱码
+    aLink.href = dataUrl
+    console.log(dataUrl, 'dataUrl')
+    aLink.click()
 }

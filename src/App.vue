@@ -5,7 +5,7 @@ import toolbar from './components/toolbar.vue'
 import operate from './components/operate.vue'
 
 import { ref } from "vue";
-const activeIndex = ref(-1)
+const activeIndex = ref(3)
 const psUrl = ref("")
 const psBodyRef = ref(null)
 const setPsUrl = (url: string) => {

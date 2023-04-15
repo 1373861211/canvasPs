@@ -9,7 +9,6 @@
 
 <script setup lang="ts">
 import {TOOLS} from '../dict.js'
-import {defineProps} from 'vue'
 const props = defineProps({
     activeIndex: Number
 })

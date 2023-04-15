@@ -30,7 +30,7 @@ let canvas: HTMLCanvasElement
 let ctx: CanvasRenderingContext2D
 
 let canvasBox: HTMLDivElement
-
+let containerSize :any
 let url: string
 onMounted(() => {
     canvasBox = document.querySelector('.canvas-box') as HTMLDivElement
@@ -38,6 +38,9 @@ onMounted(() => {
     ctx = canvas.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D
     canvasErasure = document.getElementById('erasure') as HTMLCanvasElement
     ctxErasure = canvasErasure.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D
+    const {width, height} = canvasBox.getBoundingClientRect()
+    containerSize = {width, height}
+    console.log(containerSize,'containerSize')
     setSrc(src)
 })
 
@@ -91,18 +94,21 @@ const touchEvent = (e: TouchEvent) => {
             break;
     }
 }
-
+const dpr = window.devicePixelRatio
 const setSrc = (src: string) => {
     let image = new Image()
     image.src = src
     url = src
     image.onload = function () {
-        canvas.width = image.width * canvasBox.offsetHeight / image.height;
-        canvas.height = canvasBox.offsetHeight;
+        console.log(image,'image2222')
+        canvas.width = containerSize.width * dpr;
+        canvas.height = image.height * containerSize.width / image.width * dpr;
         canvasErasure.width = canvas.width;
         canvasErasure.height = canvas.height;
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
         ctxErasure.drawImage(image, 0, 0, canvas.width, canvas.height);
+        ctx.scale(dpr,dpr)
+        ctxErasure.scale(dpr,dpr) // 解决边缘锯齿
     }
 }
 </script>
@@ -114,6 +120,7 @@ const setSrc = (src: string) => {
     justify-content: center;
     align-items: center;
     height: 100%;
+    width: 100%;
     font-size: 0;
 }
 
