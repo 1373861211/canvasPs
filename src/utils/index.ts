@@ -25,11 +25,12 @@ const getTranslate = (target: EventTarget) => {
     let nums = matrix.substring(7, matrix.length - 1).split(', ');
     let left = parseInt(nums[4]) || 0;
     let top = parseInt(nums[5]) || 0;
-    let scale = parseInt(nums[0]) || 1;
+    let scale = nums[0] || 1;
     return { left, top, scale };
 };
 // 计算相对缩放前的偏移量，rect 为当前变换后元素的四周的位置
 const relativeCoordinate = (x: number, y: number, rect: ClientRect) => {
+    console.log(rect.left, 'rect.left')
     let cx = (x - rect.left) / scaleRatio;
     let cy = (y - rect.top) / scaleRatio;
     return {
@@ -94,12 +95,14 @@ export const zoomStart = (e: TouchEvent) => {
 
     }
     recordPreTouchPosition(touches['0']);
+    e.preventDefault();
 };
 export const zoomEvent = (e: TouchEvent) => {
     let touches = e.touches;
     if (touches.length === 1) {
         recordPreTouchPosition(touches['0']);
     }
+    e.preventDefault();
 }
 
 
@@ -128,14 +131,6 @@ const writing = (
         ctx.closePath();  // 创建该条路径
     }
     ctx.restore();
-    // ctx.beginPath();  // 开启一条新路径
-    // ctx.globalAlpha = 1;  // 设置图片的透明度
-    // ctx.lineWidth = 8;  // 设置线宽
-    // ctx.strokeStyle = 'red';  // 设置路径颜色
-    // ctx.moveTo(beginX, beginY);  // 从(beginX, beginY)这个坐标点开始画图
-    // ctx.lineTo(stopX, stopY);  // 定义从(beginX, beginY)到(stopX, stopY)的线条（该方法不会创建线条）
-    // ctx.closePath();  // 创建该条路径
-    // ctx.stroke(); 
 };
 
 let beginX: number;
@@ -157,14 +152,13 @@ export const paintIng = (e: TouchEvent, canvas: HTMLCanvasElement, ctx: CanvasRe
     let stopY = touches.pageY - translateY;
     console.log(beginX, beginY, 'beginY')
     if (ctxErasure) {
+        ctx.globalCompositeOperation = "destination-out"
         ctx.clearRect(stopX, stopY, 30, 30)
     } else {
         writing(beginX, beginY, stopX, stopY, ctx);
     }
     beginX = stopX; // 这一步很关键，需要不断更新起点，否则画出来的是射线簇
     beginY = stopY;
-    // debugger
-    // console.log(getCanvasInverImatrix(canvas))
 };
 export const paintStart = (e: TouchEvent, canvas: HTMLCanvasElement) => {
     const translate = getTranslate(e.touches[0].target)

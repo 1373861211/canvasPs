@@ -28,13 +28,15 @@ const save = () => {
 
 <style scoped>
 .container {
-    display: flex;
-    flex-direction: column;
     height: 100%;
 }
-
 .body {
-    flex: 1;
+    height: calc(100% - 114px);
     overflow: hidden;
+}@supports (padding-bottom: constant(safe-area-inset-bottom)) or (padding-bottom: env(safe-area-inset-bottom)) {
+    body {
+        padding-bottom: constant(safe-area-inset-bottom);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 }
 </style>

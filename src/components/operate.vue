@@ -43,6 +43,7 @@ const handleTool = (value: string) => {
     flex: 1;
     padding: 10px 0;
     height: 24px;
+    font-size: 16px;
     .upload-file {
         position: absolute;
         left: 0;
