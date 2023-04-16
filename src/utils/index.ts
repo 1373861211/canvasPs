@@ -15,8 +15,8 @@ const getStyle = (target: EventTarget, style: string) => {
 const setStyle = (key: string, value: string, canvas: HTMLCanvasElement) => { canvas.style[key] = value; };
 const recordPreTouchPosition = (touch: any) => {
     preTouchPosition = {
-        x: touch.clientX,
-        y: touch.clientY
+        x: touch.pageX,
+        y: touch.pageY
     };
 };
 // 获取并解析元素当前的位移量
@@ -54,8 +54,8 @@ export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure:
     if (touches.length === 1) {
         let oneTouch = touches['0'];
         let translated = getTranslate(oneTouch.target);
-        translateX = oneTouch.clientX - preTouchPosition.x + translated.left;
-        translateY = oneTouch.clientY - preTouchPosition.y + translated.top;
+        translateX = oneTouch.pageX - preTouchPosition.x + translated.left;
+        translateY = oneTouch.pageY - preTouchPosition.y + translated.top;
         let matrix = `matrix(${scaleRatio}, 0, 0, ${scaleRatio}, ${translateX}, ${translateY})`;
         setStyle('transform', matrix, canvas);
         setStyle('transform', matrix, canvasErasure);
@@ -63,11 +63,11 @@ export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure:
     } else {
         let one = touches['0'];
         let two = touches['1'];
-        scaleRatio = distance(one.clientX, one.clientY, two.clientX, two.clientY) / distance(...preTouchesClientx1y1x2y2 as [number, number, number, number]) * scaleRatio || 1;
+        scaleRatio = distance(one.pageX, one.pageY, two.pageX, two.pageY) / distance(...preTouchesClientx1y1x2y2 as [number, number, number, number]) * scaleRatio || 1;
         if (!originHaveSet) {
             originHaveSet = true;
             // 移动视线中心
-            let origin = relativeCoordinate((one.clientX + two.clientX) / 2, (one.clientY + two.clientY) / 2, canvas.getBoundingClientRect());
+            let origin = relativeCoordinate((one.pageX + two.pageX) / 2, (one.pageY + two.pageY) / 2, canvas.getBoundingClientRect());
             // 修正视野变化带来的平移量
             translateX = (scaleRatio - 1) * (origin.x - scaleOrigin.x) + translateX;
             translateY = (scaleRatio - 1) * (origin.y - scaleOrigin.y) + translateY;
@@ -78,7 +78,7 @@ export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure:
         let matrix = `matrix(${scaleRatio}, 0, 0, ${scaleRatio}, ${translateX}, ${translateY})`;
         setStyle('transform', matrix, canvas);
         setStyle('transform', matrix, canvasErasure);
-        preTouchesClientx1y1x2y2 = [one.clientX, one.clientY, two.clientX, two.clientY];
+        preTouchesClientx1y1x2y2 = [one.pageX, one.pageY, two.pageX, two.pageY];
     }
     e.preventDefault();
 }
@@ -88,7 +88,7 @@ export const zoomStart = (e: TouchEvent) => {
     if (touches.length > 1) {
         let one = touches['0'];
         let two = touches['1'];
-        preTouchesClientx1y1x2y2 = [one.clientX, one.clientY, two.clientX, two.clientY];
+        preTouchesClientx1y1x2y2 = [one.pageX, one.pageY, two.pageX, two.pageY];
         // ... 开始缩放事件时，将标志置为 false
         originHaveSet = false;
 
@@ -151,10 +151,10 @@ export const paintIng = (e: TouchEvent, canvas: HTMLCanvasElement, ctx: CanvasRe
     scale = translate.scale
     console.log(left, 'left', top, 'top', scale)
     const touches = e.touches[0];
-    console.log(touches.clientX, touches.clientY, 'canvas', canvas.offsetLeft, canvas.offsetTop)
+    console.log(touches.pageX, touches.pageY, 'canvas', canvas.offsetLeft, canvas.offsetTop)
 
-    let stopX = touches.clientX  - translateX;
-    let stopY = touches.clientY - translateY;
+    let stopX = touches.pageX  - translateX;
+    let stopY = touches.pageY - translateY;
     console.log(beginX, beginY, 'beginY')
     if (ctxErasure) {
         ctx.clearRect(stopX, stopY, 30, 30)
@@ -171,8 +171,8 @@ export const paintStart = (e: TouchEvent, canvas: HTMLCanvasElement) => {
     left = translate.left
     top = translate.top
     console.log(scaleRatio, 'paint', left)
-    beginX = e.touches[0].clientX  - translateX;
-    beginY = e.touches[0].clientY - translateY;
+    beginX = e.touches[0].pageX  - translateX;
+    beginY = e.touches[0].pageY - translateY;
 
 }
 
