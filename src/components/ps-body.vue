@@ -1,8 +1,8 @@
 <template>
     <div class="canvas-box">
         <canvas id="demo" @touchmove="touchmove" @touchstart="touchstart" @touchcancel="touchEvent"
-            @touchend="touchEvent"></canvas>
-        <canvas id="erasure" class="src"></canvas>
+            @touchend="touchEvent" class="canvas"></canvas>
+        <canvas id="erasure" class="src canvas"></canvas>
         <!-- <img :src="src" class="src"> -->
     </div>
 </template>
@@ -10,13 +10,14 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import src from '@/assets/thin.webp'
-import { zoomIng, zoomStart, zoomEvent, paintIng, paintStart, downloadImg } from '../utils'
+import { zoomIng, zoomStart, zoomEvent, paintIng, paintStart, downloadImg,reset } from '../utils'
 const props = defineProps({
     activeIndex: Number,
     psUrl: String
 })
 
 const save = (dataUrl: string, name: string, ext: string) => {
+    console.log(dataUrl,'dataUrl')
     downloadImg(dataUrl)
 }
 // 暴露方法父组件调用子组件方法或者属性
@@ -109,6 +110,7 @@ const setSrc = (src: string) => {
         ctxErasure.drawImage(image, 0, 0, canvas.width, canvas.height);
         ctx.scale(dpr,dpr)
         ctxErasure.scale(dpr,dpr) // 解决边缘锯齿
+        reset(canvas, canvasErasure)
     }
 }
 </script>
@@ -122,9 +124,10 @@ const setSrc = (src: string) => {
     height: 100%;
     width: 100%;
     font-size: 0;
+    overflow: auto;
 }
 
-#demo {
+.canvas {
     position: absolute;
     top: 0;
     left: 0;
@@ -135,12 +138,7 @@ const setSrc = (src: string) => {
 }
 
 .src {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
+    z-index: 1;
     pointer-events: none;
 }
 </style>

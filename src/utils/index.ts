@@ -1,3 +1,15 @@
+// 记录变换基点
+let scaleOrigin = {
+    x: 0,
+    y: 0
+};
+let translateX = 0;
+let translateY = 0;
+let beginX: number;
+let beginY: number;
+let left: number;
+let top: number;
+let scale: number;
 let scaleRatio = 1;
 // 从变量名就知道它的用途与用法
 let preTouchesClientx1y1x2y2 = [] as number[];
@@ -6,7 +18,7 @@ let preTouchPosition = {
     x: 0,
     y: 0
 };
-let originHaveSet = false
+let layerScale = false
 // 查询 DOM 对象的 CSS 值
 const getStyle = (target: EventTarget, style: string) => {
     let styles = window.getComputedStyle(target as HTMLElement, null);
@@ -43,13 +55,6 @@ const distance = (x1: number, y1: number, x2: number, y2: number) => {
     let b = y1 - y2;
     return Math.sqrt(a * a + b * b);
 };
-// 记录变换基点
-let scaleOrigin = {
-    x: 0,
-    y: 0
-};
-let translateX = 0;
-let translateY = 0;
 export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure: HTMLCanvasElement) => {
     let touches = e.touches;
     if (touches.length === 1) {
@@ -65,8 +70,8 @@ export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure:
         let one = touches['0'];
         let two = touches['1'];
         scaleRatio = distance(one.pageX, one.pageY, two.pageX, two.pageY) / distance(...preTouchesClientx1y1x2y2 as [number, number, number, number]) * scaleRatio || 1;
-        if (!originHaveSet) {
-            originHaveSet = true;
+        if (!layerScale) {
+            layerScale = true;
             // 移动视线中心
             let origin = relativeCoordinate((one.pageX + two.pageX) / 2, (one.pageY + two.pageY) / 2, canvas.getBoundingClientRect());
             // 修正视野变化带来的平移量
@@ -91,7 +96,7 @@ export const zoomStart = (e: TouchEvent) => {
         let two = touches['1'];
         preTouchesClientx1y1x2y2 = [one.pageX, one.pageY, two.pageX, two.pageY];
         // ... 开始缩放事件时，将标志置为 false
-        originHaveSet = false;
+        layerScale = false;
 
     }
     recordPreTouchPosition(touches['0']);
@@ -133,17 +138,11 @@ const writing = (
     ctx.restore();
 };
 
-let beginX: number;
-let beginY: number;
-let left: number;
-let top: number;
-let scale: number;
 export const paintIng = (e: TouchEvent, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, ctxErasure?: CanvasRenderingContext2D) => {
     e.preventDefault()
     const translate = getTranslate(e.touches[0].target)
     left = translate.left
     top = translate.top
-    scale = translate.scale
     console.log(left, 'left', top, 'top', scale)
     const touches = e.touches[0];
     console.log(touches.pageX, touches.pageY, 'canvas', canvas.offsetLeft, canvas.offsetTop)
@@ -164,7 +163,7 @@ export const paintStart = (e: TouchEvent, canvas: HTMLCanvasElement) => {
     const translate = getTranslate(e.touches[0].target)
     left = translate.left
     top = translate.top
-    console.log(scaleRatio, 'paint', left)
+    console.log(scaleRatio, 'paint', left);
     beginX = e.touches[0].pageX  - translateX;
     beginY = e.touches[0].pageY - translateY;
 
@@ -198,4 +197,22 @@ export const downloadImg = (dataUrl: string) => {
     aLink.href = dataUrl
     console.log(dataUrl, 'dataUrl')
     aLink.click()
+}
+
+export const reset = (canvas, canvasErasure) => {
+    scaleRatio = 1
+    scaleOrigin = {
+        x: 0,
+        y: 0
+    };
+    preTouchPosition = {
+        x: 0,
+        y: 0
+    };
+    translateX = 0;
+    translateY = 0;
+    canvas.style.transform = ''
+    canvasErasure.style.transform = ''
+    canvas.style['transform-origin']= '50% 50%'
+    canvasErasure.style['transform-origin']= '50% 50%'
 }

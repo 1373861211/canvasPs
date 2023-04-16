@@ -12,6 +12,7 @@ const setPsUrl = (url: string) => {
     psUrl.value = url
 }
 const save = () => {
+    console.log(psUrl,'psUrl.value')
     psBodyRef.value?.save(psUrl.value)
 }
 </script>
