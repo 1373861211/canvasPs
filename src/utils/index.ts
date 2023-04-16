@@ -50,7 +50,7 @@ let scaleOrigin = {
 let translateX = 0;
 let translateY = 0;
 export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure: HTMLCanvasElement) => {
-    let touches = e.changedTouches;
+    let touches = e.touches;
     if (touches.length === 1) {
         let oneTouch = touches['0'];
         let translated = getTranslate(oneTouch.target);
@@ -83,7 +83,7 @@ export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure:
     e.preventDefault();
 }
 export const zoomStart = (e: TouchEvent) => {
-    let touches = e.changedTouches;
+    let touches = e.touches;
     // 双指同时落下也是有先后顺序的，当发现多指触摸时进行记录
     if (touches.length > 1) {
         let one = touches['0'];
@@ -96,7 +96,7 @@ export const zoomStart = (e: TouchEvent) => {
     recordPreTouchPosition(touches['0']);
 };
 export const zoomEvent = (e: TouchEvent) => {
-    let touches = e.changedTouches;
+    let touches = e.touches;
     if (touches.length === 1) {
         recordPreTouchPosition(touches['0']);
     }
@@ -145,12 +145,12 @@ let top: number;
 let scale: number;
 export const paintIng = (e: TouchEvent, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, ctxErasure?: CanvasRenderingContext2D) => {
     e.preventDefault()
-    const translate = getTranslate(e.changedTouches[0].target)
+    const translate = getTranslate(e.touches[0].target)
     left = translate.left
     top = translate.top
     scale = translate.scale
     console.log(left, 'left', top, 'top', scale)
-    const touches = e.changedTouches[0];
+    const touches = e.touches[0];
     console.log(touches.clientX, touches.clientY, 'canvas', canvas.offsetLeft, canvas.offsetTop)
 
     let stopX = touches.clientX  - translateX;
@@ -167,12 +167,12 @@ export const paintIng = (e: TouchEvent, canvas: HTMLCanvasElement, ctx: CanvasRe
     // console.log(getCanvasInverImatrix(canvas))
 };
 export const paintStart = (e: TouchEvent, canvas: HTMLCanvasElement) => {
-    const translate = getTranslate(e.changedTouches[0].target)
+    const translate = getTranslate(e.touches[0].target)
     left = translate.left
     top = translate.top
     console.log(scaleRatio, 'paint', left)
-    beginX = e.changedTouches[0].clientX  - translateX;
-    beginY = e.changedTouches[0].clientY - translateY;
+    beginX = e.touches[0].clientX  - translateX;
+    beginY = e.touches[0].clientY - translateY;
 
 }
 
