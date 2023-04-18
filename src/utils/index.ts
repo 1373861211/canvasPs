@@ -86,7 +86,6 @@ export const zoomIng = (e: TouchEvent, canvas: HTMLCanvasElement, canvasErasure:
         setStyle('transform', matrix, canvasErasure);
         preTouchesClientx1y1x2y2 = [one.clientX, one.clientY, two.clientX, two.clientY];
     }
-    console.log(translateX,'translateX', translateY)
     e.preventDefault();
 }
 export const zoomStart = (e: TouchEvent) => {
@@ -214,4 +213,44 @@ export const reset = (canvas, canvasErasure) => {
     canvasErasure.style.transform = ''
     canvas.style['transform-origin']= '50% 50%'
     canvasErasure.style['transform-origin']= '50% 50%'
+}
+
+export const mergeCanvas = (canvas1, canvas2) => {
+// canvas1 和 canvas2 分别是两个要合并的 Canvas 元素
+
+// 创建一个新的 Canvas，宽度和高度等于两个 Canvas 中最大的宽度和高度
+const combinedCanvas = document.createElement('canvas');
+const maxWidth = Math.max(canvas1.width, canvas2.width);
+const maxHeight = Math.max(canvas1.height, canvas2.height);
+combinedCanvas.width = maxWidth;
+combinedCanvas.height = maxHeight;
+
+// 获取两个 Canvas 的内容，并创建对应的 Image 对象
+const image1 = new Image();
+image1.src = canvas1.toDataURL();
+const image2 = new Image();
+image1.onload = function() {
+
+    image2.src = canvas2.toDataURL();
+    image2.onload = function() {
+
+        // 将两个 Image 对象绘制到新的 Canvas 上, 要注意顺序，基底在前面
+        const context = combinedCanvas.getContext('2d');
+        context.drawImage(image2, 0, 0, canvas2.width, canvas2.height, 0, 0, canvas2.width, canvas2.height);
+        context.drawImage(image1, 0, 0, canvas1.width, canvas1.height, 0, 0, canvas1.width, canvas1.height);
+        
+        // 将合并后的 Canvas 转换为一个图片文件，然后进行下载
+        combinedCanvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'combined.png';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+    }
+}
+
 }

@@ -10,15 +10,16 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import src from '@/assets/thin.webp'
-import { zoomIng, zoomStart, zoomEvent, paintIng, paintStart, downloadImg,reset,paintEnd } from '../utils'
+import { zoomIng, zoomStart, zoomEvent, paintIng, paintStart, downloadImg,reset,paintEnd,mergeCanvas } from '../utils'
 const props = defineProps({
     activeIndex: Number,
     psUrl: String
 })
 
-const save = (dataUrl: string, name: string, ext: string) => {
+const save = () => {
+    let dataUrl = mergeCanvas(canvas, canvasErasure)
     console.log(dataUrl,'dataUrl')
-    downloadImg(dataUrl)
+    // downloadImg(dataUrl)
 }
 // 暴露方法父组件调用子组件方法或者属性
 defineExpose({
@@ -41,7 +42,6 @@ onMounted(() => {
     ctxErasure = canvasErasure.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D
     const {width, height} = canvasBox.getBoundingClientRect()
     containerSize = {width, height}
-    console.log(containerSize,'containerSize')
     setSrc(src)
 })
 
@@ -102,7 +102,6 @@ const setSrc = (src: string) => {
     image.src = src
     url = src
     image.onload = function () {
-        console.log(image,'image2222')
         canvas.width = containerSize.width * dpr;
         canvas.height = image.height * containerSize.width / image.width * dpr;
         canvasErasure.width = canvas.width;
