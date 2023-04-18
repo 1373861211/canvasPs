@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import src from '@/assets/thin.webp'
-import { zoomIng, zoomStart, zoomEvent, paintIng, paintStart, downloadImg,reset } from '../utils'
+import { zoomIng, zoomStart, zoomEvent, paintIng, paintStart, downloadImg,reset,paintEnd } from '../utils'
 const props = defineProps({
     activeIndex: Number,
     psUrl: String
@@ -90,6 +90,7 @@ const touchEvent = (e: TouchEvent) => {
         case 3:
             // 画笔
             // paintIng(e, canvas, ctx)
+            paintEnd(e)
             break;
         default:
             break;
