@@ -1,7 +1,7 @@
 <template>
     <div class="canvas-box">
-        <canvas id="contentCanvas" @touchmove="touchmove" @touchstart="touchstart" @touchcancel="touchEvent"
-            @touchend="touchEvent" class="canvas">
+        <canvas id="contentCanvas" @touchmove="touchmove" @touchstart="touchstart" @touchcancel="touchcancel"
+            @touchend="touchEnd" class="canvas">
         </canvas>
         <canvas id="baseCanvas" class="src canvas"></canvas>
     </div>
@@ -64,6 +64,8 @@ watch(
     }
 );
 const touchstart = (e: TouchEvent) => {
+    console.log('touchstart');
+
     switch (props.activeIndex) {
         case -1:
             // 拖动、缩放
@@ -77,15 +79,16 @@ const touchstart = (e: TouchEvent) => {
                 zoomStart(e);
                 return
             }
-            if (canPaint) {
-                paintStart(e, canvas);
-            }
+            canPaint = true
+            paintStart(e, canvas);
             break;
         default:
             break;
     }
 };
 const touchmove = (e: TouchEvent) => {
+    console.log('touchmove');
+
     switch (props.activeIndex) {
         case -1:
             // 拖动、缩放
@@ -111,7 +114,9 @@ const touchmove = (e: TouchEvent) => {
             break;
     }
 };
-const touchEvent = (e: TouchEvent) => {
+const touchEnd = (e: TouchEvent) => {
+    console.log('touchend');
+
     switch (props.activeIndex) {
         case -1:
             // 拖动、缩放
@@ -124,13 +129,19 @@ const touchEvent = (e: TouchEvent) => {
                 zoomEvent(e)
                 return
             }
-            canPaint = true
-            paintEnd(e);
+            if (canPaint) {
+                paintEnd(e);
+            }
             break;
         default:
             break;
     }
 };
+
+const touchcancel = (e: TouchEvent) => {
+    touchEnd(e)
+    console.log('touchcancel');
+}
 const dpr = window.devicePixelRatio;
 const setSrc = (src: string) => {
     let image = new Image();
