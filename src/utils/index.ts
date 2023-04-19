@@ -142,11 +142,10 @@ export const paintIng = (e: TouchEvent, canvas: HTMLCanvasElement, ctx: CanvasRe
     e.preventDefault()
     const touches = e.touches[0];
     const rect = canvas.getBoundingClientRect()
-    let stopX = (touches.clientX  - rect.left) / scaleRatio;
-    let stopY = (touches.clientY  - rect.top) / scaleRatio;
+    let stopX = (touches.clientX - rect.left) / scaleRatio;
+    let stopY = (touches.clientY - rect.top) / scaleRatio;
     if (ctxErasure) {
-        ctx.globalCompositeOperation = "destination-out"
-        ctx.clearRect(stopX, stopY, 30, 30)
+        ctx.clearRect(stopX, stopY, 8 * 3, 8 * 3)
     } else {
         writing(beginX, beginY, stopX, stopY, ctx);
     }
@@ -156,8 +155,8 @@ export const paintIng = (e: TouchEvent, canvas: HTMLCanvasElement, ctx: CanvasRe
 export const paintStart = (e: TouchEvent, canvas: HTMLCanvasElement) => {
     const touches = e.touches[0]
     const rect = canvas.getBoundingClientRect()
-    beginX = (touches.clientX  - rect.left) / scaleRatio;
-    beginY = (touches.clientY  - rect.top) / scaleRatio;
+    beginX = (touches.clientX - rect.left) / scaleRatio;
+    beginY = (touches.clientY - rect.top) / scaleRatio;
 
 }
 
@@ -197,7 +196,7 @@ export const downloadImg = (dataUrl: string) => {
     aLink.click()
 }
 
-export const reset = (canvas, canvasErasure) => {
+export const reset = (canvas: HTMLCanvasElement, canvasErasure: HTMLCanvasElement) => {
     scaleRatio = 1
     scaleOrigin = {
         x: 0,
@@ -211,46 +210,46 @@ export const reset = (canvas, canvasErasure) => {
     translateY = 0;
     canvas.style.transform = ''
     canvasErasure.style.transform = ''
-    canvas.style['transform-origin']= '50% 50%'
-    canvasErasure.style['transform-origin']= '50% 50%'
+    canvas.style.transformOrigin = '50% 50%'
+    canvasErasure.style.transformOrigin = '50% 50%';
 }
 
-export const mergeCanvas = (canvas1, canvas2) => {
-// canvas1 和 canvas2 分别是两个要合并的 Canvas 元素
+export const mergeCanvas = (contentCanvas: HTMLCanvasElement, baseCanvas: HTMLCanvasElement) => {
+    // contentCanvas 和 baseCanvas 分别是两个要合并的 Canvas 元素
 
-// 创建一个新的 Canvas，宽度和高度等于两个 Canvas 中最大的宽度和高度
-const combinedCanvas = document.createElement('canvas');
-const maxWidth = Math.max(canvas1.width, canvas2.width);
-const maxHeight = Math.max(canvas1.height, canvas2.height);
-combinedCanvas.width = maxWidth;
-combinedCanvas.height = maxHeight;
+    // 创建一个新的 Canvas，宽度和高度等于两个 Canvas 中最大的宽度和高度
+    const combinedCanvas = document.createElement('canvas');
+    const maxWidth = Math.max(contentCanvas.width, baseCanvas.width);
+    const maxHeight = Math.max(contentCanvas.height, baseCanvas.height);
+    combinedCanvas.width = maxWidth;
+    combinedCanvas.height = maxHeight;
 
-// 获取两个 Canvas 的内容，并创建对应的 Image 对象
-const image1 = new Image();
-image1.src = canvas1.toDataURL();
-const image2 = new Image();
-image1.onload = function() {
+    // 获取两个 Canvas 的内容，并创建对应的 Image 对象
+    const image1 = new Image();
+    const image2 = new Image();
+    image1.src = contentCanvas.toDataURL();
+    image1.onload = function () {
 
-    image2.src = canvas2.toDataURL();
-    image2.onload = function() {
+        image2.src = baseCanvas.toDataURL();
+        image2.onload = function () {
 
-        // 将两个 Image 对象绘制到新的 Canvas 上, 要注意顺序，基底在前面
-        const context = combinedCanvas.getContext('2d');
-        context.drawImage(image2, 0, 0, canvas2.width, canvas2.height, 0, 0, canvas2.width, canvas2.height);
-        context.drawImage(image1, 0, 0, canvas1.width, canvas1.height, 0, 0, canvas1.width, canvas1.height);
-        
-        // 将合并后的 Canvas 转换为一个图片文件，然后进行下载
-        combinedCanvas.toBlob(blob => {
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = 'combined.png';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }, 'image/png');
+            // 将两个 Image 对象绘制到新的 Canvas 上, 要注意顺序，基底在前面
+            const context = combinedCanvas.getContext('2d') as CanvasRenderingContext2D;
+            context.drawImage(image2, 0, 0, baseCanvas.width, baseCanvas.height, 0, 0, baseCanvas.width, baseCanvas.height);
+            context.drawImage(image1, 0, 0, contentCanvas.width, contentCanvas.height, 0, 0, contentCanvas.width, contentCanvas.height);
+
+            // 将合并后的 Canvas 转换为一个图片文件，然后进行下载
+            combinedCanvas.toBlob((blob :Blob | null) => {
+                const url = URL.createObjectURL(blob as Blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'combined.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }
     }
-}
 
 }

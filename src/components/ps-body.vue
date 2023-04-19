@@ -1,86 +1,116 @@
 <template>
     <div class="canvas-box">
-        <canvas id="demo" @touchmove="touchmove" @touchstart="touchstart" @touchcancel="touchEvent"
-            @touchend="touchEvent" class="canvas"></canvas>
-        <canvas id="erasure" class="src canvas"></canvas>
-        <!-- <img :src="src" class="src"> -->
+        <canvas id="contentCanvas" @touchmove="touchmove" @touchstart="touchstart" @touchcancel="touchEvent"
+            @touchend="touchEvent" class="canvas">
+        </canvas>
+        <canvas id="baseCanvas" class="src canvas"></canvas>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
-import src from '@/assets/thin.webp'
-import { zoomIng, zoomStart, zoomEvent, paintIng, paintStart, downloadImg,reset,paintEnd,mergeCanvas } from '../utils'
+import { onMounted, ref, watch } from "vue";
+import src from "@/assets/thin.webp";
+import {
+    zoomIng,
+    zoomStart,
+    zoomEvent,
+    paintIng,
+    paintStart,
+    reset,
+    paintEnd,
+    mergeCanvas,
+} from "../utils";
 const props = defineProps({
     activeIndex: Number,
-    psUrl: String
-})
+    psUrl: String,
+});
 
 const save = () => {
-    let dataUrl = mergeCanvas(canvas, canvasErasure)
-    console.log(dataUrl,'dataUrl')
-    // downloadImg(dataUrl)
-}
+    mergeCanvas(canvas, canvasErasure);
+};
 // 暴露方法父组件调用子组件方法或者属性
 defineExpose({
     save,
 });
-let canvasErasure: HTMLCanvasElement
-let ctxErasure: CanvasRenderingContext2D
+let canvasErasure: HTMLCanvasElement;
+let ctxErasure: CanvasRenderingContext2D;
 
-let canvas: HTMLCanvasElement
-let ctx: CanvasRenderingContext2D
+let canvas: HTMLCanvasElement;
+let ctx: CanvasRenderingContext2D;
 
-let canvasBox: HTMLDivElement
-let containerSize :any
-let url: string
+let canvasBox: HTMLDivElement;
+let containerSize: any;
+let canPaint = false
 onMounted(() => {
-    canvasBox = document.querySelector('.canvas-box') as HTMLDivElement
-    canvas = document.getElementById('demo') as HTMLCanvasElement
-    ctx = canvas.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D
-    canvasErasure = document.getElementById('erasure') as HTMLCanvasElement
-    ctxErasure = canvasErasure.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D
-    const {width, height} = canvasBox.getBoundingClientRect()
-    containerSize = {width, height}
-    setSrc(src)
-})
+    canvasBox = document.querySelector(".canvas-box") as HTMLDivElement;
+    canvas = document.getElementById("contentCanvas") as HTMLCanvasElement;
+    ctx = canvas.getContext("2d", {
+        willReadFrequently: true,
+    }) as CanvasRenderingContext2D;
+    canvasErasure = document.getElementById("baseCanvas") as HTMLCanvasElement;
+    ctxErasure = canvasErasure.getContext("2d", {
+        willReadFrequently: true,
+    }) as CanvasRenderingContext2D;
+    const { width, height } = canvasBox.getBoundingClientRect();
+    containerSize = { width, height };
+    setSrc(src);
+});
 
-watch(() => props.psUrl, (newValue, oldValue) => {
-    console.log("新值是" + newValue, "旧址是" + oldValue);
-    setSrc(newValue as string)
-})
+watch(
+    () => props.psUrl,
+    (newValue, oldValue) => {
+        console.log("新值是" + newValue, "旧址是" + oldValue);
+        setSrc(newValue as string);
+    }
+);
 const touchstart = (e: TouchEvent) => {
     switch (props.activeIndex) {
         case -1:
             // 拖动、缩放
-            zoomStart(e)
+            zoomStart(e);
+            canPaint = false
             break;
         case 3:
             // 画笔
-            paintStart(e, canvas)
+            if (e.touches.length > 1) {
+                canPaint = false
+                zoomStart(e);
+                return
+            }
+            if (canPaint) {
+                paintStart(e, canvas);
+            }
             break;
         default:
             break;
     }
-}
+};
 const touchmove = (e: TouchEvent) => {
     switch (props.activeIndex) {
         case -1:
             // 拖动、缩放
-            zoomIng(e, canvas, canvasErasure)
+            zoomIng(e, canvas, canvasErasure);
             break;
         case 1:
             // 橡皮
-            paintIng(e, canvas, ctx, ctx)
+            paintIng(e, canvas, ctx, ctx);
             break;
         case 3:
             // 画笔
-            paintIng(e, canvas, ctx)
+            if (e.touches.length > 1) {
+                zoomIng(e, canvas, canvasErasure);
+                canPaint = false
+                return
+            }
+            if (canPaint) {
+
+                paintIng(e, canvas, ctx);
+            }
             break;
         default:
             break;
     }
-}
+};
 const touchEvent = (e: TouchEvent) => {
     switch (props.activeIndex) {
         case -1:
@@ -90,29 +120,33 @@ const touchEvent = (e: TouchEvent) => {
         case 3:
             // 画笔
             // paintIng(e, canvas, ctx)
-            paintEnd(e)
+            if (e.touches.length > 1) {
+                zoomEvent(e)
+                return
+            }
+            canPaint = true
+            paintEnd(e);
             break;
         default:
             break;
     }
-}
-const dpr = window.devicePixelRatio
+};
+const dpr = window.devicePixelRatio;
 const setSrc = (src: string) => {
-    let image = new Image()
-    image.src = src
-    url = src
+    let image = new Image();
+    image.src = src;
     image.onload = function () {
         canvas.width = containerSize.width * dpr;
-        canvas.height = image.height * containerSize.width / image.width * dpr;
+        canvas.height = ((image.height * containerSize.width) / image.width) * dpr;
         canvasErasure.width = canvas.width;
         canvasErasure.height = canvas.height;
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
         ctxErasure.drawImage(image, 0, 0, canvas.width, canvas.height);
-        ctx.scale(dpr,dpr)
-        ctxErasure.scale(dpr,dpr) // 解决边缘锯齿
-        reset(canvas, canvasErasure)
-    }
-}
+        ctx.scale(dpr, dpr);
+        ctxErasure.scale(dpr, dpr); // 解决边缘锯齿
+        reset(canvas, canvasErasure);
+    };
+};
 </script>
 
 <style scoped lang="less">
