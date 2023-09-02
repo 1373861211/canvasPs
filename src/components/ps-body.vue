@@ -10,6 +10,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 import src from "@/assets/thin.webp";
+import throttle from 'lodash/throttle';
 import {
     zoomIng,
     zoomStart,
@@ -86,7 +87,7 @@ const touchstart = (e: TouchEvent) => {
             break;
     }
 };
-const touchmove = (e: TouchEvent) => {
+const touchmove = throttle((e: TouchEvent) => {
     console.log('touchmove');
 
     switch (props.activeIndex) {
@@ -113,9 +114,10 @@ const touchmove = (e: TouchEvent) => {
         default:
             break;
     }
-};
+})
+
 const touchEnd = (e: TouchEvent) => {
-    console.log('touchend');
+    console.log('touchend', e.touches.length);
 
     switch (props.activeIndex) {
         case -1:
