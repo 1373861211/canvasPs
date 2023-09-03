@@ -1,5 +1,5 @@
 <template>
-    <div class="canvas-box">
+    <div class="canvas-box" :style="sstyle">
         <canvas id="contentCanvas" @touchmove="touchmove" @touchstart="touchstart" @touchcancel="touchcancel"
             @touchend="touchEnd" class="canvas">
         </canvas>
@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { onMounted, computed, ref, watch, reactive } from "vue";
 import src from "@/assets/thin.webp";
 import throttle from 'lodash/throttle';
 import {
@@ -20,6 +20,7 @@ import {
     reset,
     paintEnd,
     mergeCanvas,
+    getContainSize
 } from "../utils";
 const props = defineProps({
     activeIndex: Number,
@@ -42,9 +43,14 @@ let ctx: CanvasRenderingContext2D;
 let canvasBox: HTMLDivElement;
 let containerSize: any;
 let canPaint = false
+let scrollHeight = ref(0), scrollWidth = ref(0)
+const imageInfo = reactive({ width: 0, height: 0 })
 onMounted(() => {
     canvasBox = document.querySelector(".canvas-box") as HTMLDivElement;
     canvas = document.getElementById("contentCanvas") as HTMLCanvasElement;
+    let body = document.querySelector('.body')
+    scrollHeight.value = body?.scrollHeight
+    scrollWidth.value = body?.scrollWidth
     ctx = canvas.getContext("2d", {
         willReadFrequently: true,
     }) as CanvasRenderingContext2D;
@@ -57,6 +63,14 @@ onMounted(() => {
     setSrc(src);
 });
 
+const sstyle = computed(() => {
+    const { width, height } = getContainSize(scrollWidth.value, scrollHeight.value, imageInfo.width, imageInfo.height)
+    console.log(width, height, scrollHeight.value, scrollWidth.value, imageInfo);
+    return {
+        width: width + 'px',
+        height: height + 'px'
+    }
+})
 watch(
     () => props.psUrl,
     (newValue, oldValue) => {
@@ -149,8 +163,11 @@ const setSrc = (src: string) => {
     let image = new Image();
     image.src = src;
     image.onload = function () {
-        canvas.width = containerSize.width * dpr;
-        canvas.height = ((image.height * containerSize.width) / image.width) * dpr;
+        imageInfo.width = image.width
+        imageInfo.height = image.height
+        const { width } = getContainSize(scrollWidth.value, scrollHeight.value, imageInfo.width, imageInfo.height)
+        canvas.width = width * dpr;
+        canvas.height = ((image.height * width) / image.width) * dpr;
         canvasErasure.width = canvas.width;
         canvasErasure.height = canvas.height;
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -165,13 +182,9 @@ const setSrc = (src: string) => {
 <style scoped lang="less">
 .canvas-box {
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    width: 100%;
     font-size: 0;
     overflow: auto;
+    background-color: beige;
 }
 
 .canvas {
@@ -181,7 +194,7 @@ const setSrc = (src: string) => {
     right: 0;
     bottom: 0;
     width: 100%;
-    z-index: 5;
+    z-index: 54;
 }
 
 .src {

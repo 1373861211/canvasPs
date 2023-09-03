@@ -168,6 +168,44 @@ export const paintStart = (e: TouchEvent, canvas: HTMLCanvasElement) => {
 
 }
 
+/**
+ * 根据父容器大小计算子内容的contain展示方式
+ * @param {*} containerWidth
+ * @param {*} containerHeight
+ * @param {*} imageWidth
+ * @param {*} imageHeight
+ * @returns
+ */
+export const getContainSize = (containerWidth :number, containerHeight:number, imageWidth:number, imageHeight:number)=> {
+    const layerRatio = containerWidth / containerHeight;
+    const imageRatio = imageWidth / imageHeight;
+
+    let width, height, x, y;
+
+    // ratio越小，图片越修长
+    // layerRatio <= imageRatio时，图层比较修长，原图宽度占满
+    if (layerRatio <= imageRatio) {
+        // 图层比较修长，原图宽度占满
+        width = containerWidth;
+        height = Math.floor(containerWidth / imageRatio);
+        x = 0;
+        y = (containerHeight - height) / 2;
+    } else {
+        // 原图比较修长，原图高度占满
+        width = Math.floor(containerHeight * imageRatio);
+        height = containerHeight;
+        x = (containerWidth - width) / 2;
+        y = 0;
+    }
+
+    return {
+        width,
+        height,
+        x,
+        y
+    };
+};
+
 export const paintEnd = (e: TouchEvent) => {
     let touches = e.touches;
     if (touches.length === 1) {
@@ -177,6 +215,8 @@ export const paintEnd = (e: TouchEvent) => {
 // 获取本地上传图片
 export const getFileUrl = (e: InputEvent) => {
     let files = e.target?.files, file;
+    console.log(files, 'files');
+    
     if (files && files.length > 0) {
         // 获取目前上传的文件
         file = files[0];

@@ -12,7 +12,7 @@ const setPsUrl = (url: string) => {
     psUrl.value = url
 }
 const save = () => {
-    console.log(psUrl,'psUrl.value')
+    console.log(psUrl, 'psUrl.value')
     psBodyRef.value?.save(psUrl.value)
 }
 </script>
@@ -31,10 +31,16 @@ const save = () => {
 .container {
     height: 100%;
 }
+
 .body {
     height: calc(100% - 114px);
     overflow: hidden;
-}@supports (padding-bottom: constant(safe-area-inset-bottom)) or (padding-bottom: env(safe-area-inset-bottom)) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@supports (padding-bottom: constant(safe-area-inset-bottom)) or (padding-bottom: env(safe-area-inset-bottom)) {
     body {
         padding-bottom: constant(safe-area-inset-bottom);
         padding-bottom: env(safe-area-inset-bottom);
